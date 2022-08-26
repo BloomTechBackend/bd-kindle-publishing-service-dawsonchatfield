@@ -51,6 +51,11 @@ public class CatalogDao {
         this.dynamoDbMapper.save(book);
     }
 
+    public boolean validateBookExists(String bookId) {
+        CatalogItemVersion book = this.getLatestVersionOfBook(bookId);
+        return book == null;
+    }
+
     // Returns null if no version exists for the provided bookId
     private CatalogItemVersion getLatestVersionOfBook(String bookId) {
         CatalogItemVersion book = new CatalogItemVersion();
