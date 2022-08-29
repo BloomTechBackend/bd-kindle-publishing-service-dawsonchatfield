@@ -27,6 +27,7 @@ public class SubmitBookForPublishingActivity {
 
     private PublishingStatusDao publishingStatusDao;
     private CatalogDao catalogDao;
+    private BookPublishRequestManager manager;
 
     /**
      * Instantiates a new SubmitBookForPublishingActivity object.
@@ -34,9 +35,10 @@ public class SubmitBookForPublishingActivity {
      * @param publishingStatusDao PublishingStatusDao to access the publishing status table.
      */
     @Inject
-    public SubmitBookForPublishingActivity(PublishingStatusDao publishingStatusDao, CatalogDao catalogDao) {
+    public SubmitBookForPublishingActivity(PublishingStatusDao publishingStatusDao, CatalogDao catalogDao, BookPublishRequestManager manager) {
         this.publishingStatusDao = publishingStatusDao;
         this.catalogDao = catalogDao;
+        this.manager = manager;
     }
 
     /**
@@ -55,8 +57,9 @@ public class SubmitBookForPublishingActivity {
             throw new BookNotFoundException(String.format("No book found for id: %s", request.getBookId()));
         }
 
-        final BookPublishRequest bookPublishRequest = BookPublishRequestConverter.toBookPublishRequest(request);
-
+        BookPublishRequest bookPublishRequest = BookPublishRequestConverter.toBookPublishRequest(request);
+        this.manager.addBookPublishRequest(bookPublishRequest);
+        System.err.println(this.manager);
 
 
         // TODO: Submit the BookPublishRequest for processing

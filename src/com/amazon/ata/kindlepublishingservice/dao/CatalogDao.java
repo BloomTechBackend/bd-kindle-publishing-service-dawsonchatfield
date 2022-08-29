@@ -36,7 +36,7 @@ public class CatalogDao {
         CatalogItemVersion book = getLatestVersionOfBook(bookId);
 
         if (book == null || book.isInactive()) {
-            throw new BookNotFoundException(String.format("No book found for id: %s", bookId));
+            throw new BookNotFoundException(String.format("GETBOOKFROMCATALOG | No book found for id: %s", bookId));
         }
 
         return book;
@@ -45,7 +45,7 @@ public class CatalogDao {
     public void deleteBookFromCatalog(String bookId) {
         CatalogItemVersion book = this.getLatestVersionOfBook(bookId);
         if(book == null || book.isInactive()) {
-            throw new BookNotFoundException(String.format("No book found for id: %s", bookId));
+            throw new BookNotFoundException(String.format("DELETE | No book found for id: %s", bookId));
         }
         book.setInactive(true);
         this.dynamoDbMapper.save(book);
@@ -54,6 +54,42 @@ public class CatalogDao {
     public boolean validateBookExists(String bookId) {
         CatalogItemVersion book = this.getLatestVersionOfBook(bookId);
         return book == null;
+    }
+
+    public CatalogItemVersion createOrUpdateBook(KindleFormattedBook book) {
+        CatalogItemVersion item = null;
+        if(book.getBookId() == null || book.getBookId().isBlank()) {
+            item = new CatalogItemVersion();
+            item.setBookId(KindlePublishingUtils.generateBookId());
+            item.setTitle(book.getTitle());
+            item.setAuthor(book.getAuthor());
+            item.setGenre(book.getGenre());
+            item.setText(book.getText());
+            item.setVersion(1);
+
+            this.dynamoDbMapper.save(item);
+            return item;
+        }
+
+        item = this.getLatestVersionOfBook(book.getBookId());
+        assert item != null; // should already throw exception
+
+        CatalogItemVersion newItem = new CatalogItemVersion();
+        newItem.setBookId(book.getBookId());
+        newItem.setInactive(false);
+        newItem.setAuthor(book.getAuthor());
+        newItem.setText(book.getText());
+        newItem.setTitle(book.getTitle());
+        newItem.setGenre(book.getGenre());
+        newItem.setVersion(item.getVersion() + 1);
+
+
+
+        System.err.println("Got Here!");
+        this.deleteBookFromCatalog(book.getBookId());
+        this.dynamoDbMapper.save(newItem);
+
+        return newItem;
     }
 
     // Returns null if no version exists for the provided bookId

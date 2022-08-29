@@ -29,6 +29,7 @@ public class BookPublisher {
      * @param publishTask the task that should be scheduled to publish books
      */
     @Inject
+
     public BookPublisher(ScheduledExecutorService scheduledExecutorService,
                          Runnable publishTask) {
         this.publishTask = publishTask;
